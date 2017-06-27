@@ -1,0 +1,96 @@
+---
+title: "Ternary plots in R"
+author: "Mike Croucher"
+date: "18 May 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Installation
+
+We are going to make use of the [ggtern](http://www.ggtern.com/) package. Install this in R with the following command
+
+```{r eval=FALSE}
+install.packages('ggtern')
+```
+
+You should only ever need to do this once per machine you are using.
+
+## Loading and checking the data
+
+Ensure that the file **iii_new CSR_PV.csv** is in the current working directory and load it into the object `mydata` with the following command. Note that we are telling R that the row names are in column 1 of our csv file.
+
+```{r}
+mydata = read.csv('iii_new CSR_ALL.csv', row.names=1)
+```
+
+View the data by entering the object name
+
+```{r}
+mydata
+```
+
+We can look at any individual row, for example Q10, using this notation
+
+```{r}
+mydata["Q10",]
+```
+
+We need to ensure that each row sums to 1. Otherwise, a ternary plot is not suitable. Check that using the `rowSums` command.
+
+```{r}
+rowSums(mydata)
+```
+
+Some of the rows don't quite sum to 1. Probably a rounding issue of some sort. Perhaps worth checking though
+
+## Making the ternary plot
+
+Load `ggtern` and produce a basic plot. Save it as the file `plot1.png`
+
+```{r warning=FALSE, message=FALSE}
+library(ggtern)
+```
+```{r}
+base1 = ggtern(data=mydata,aes(R,C,S)) + geom_point()
+show(base1)
+ggsave('plot1.png')
+```
+
+Plot the same data but with some more annotations. Save it as the file `plot2.png`:
+
+```{r}
+markers = c(rep('Killesberg',19),rep('Rathaus Complex',30))
+base2 = ggtern(data=mydata,aes(R,C,S)) + geom_point(aes(shape=markers)) + theme_nomask()
+show(base2)
+ggsave('plot2.png')
+```
+
+Same as before but make the original points bigger. Save it as the file `plot3.png`
+
+```{r}
+markers = c(rep('Killesberg',19),rep('Rathaus Complex',30))
+base3 = ggtern(data=mydata,aes(R,C,S)) + geom_point(aes(shape=markers)) + theme_nomask() +
+        scale_shape_manual(values=c(16,17))
+base3 = base2 + geom_point(data = mydata['ORIGINAL Rathaus',],size=5,shape=17)
+base3 = base2 + geom_point(data = mydata['ORIGINAL Kberg',],size=5,shape=16)
+show(base3)
+ggsave('plot3.png')
+```
+
+Now, we plot just the killesberg data. Save it as the file `plot4.png`
+
+```{r}
+markers = c(rep('original',1),rep('North',9),rep('South',9))
+killesberg = mydata[1:19,]
+base4 = ggtern(data=killesberg,aes(R,C,S)) + 
+        geom_point(aes(shape=markers))  + 
+        scale_shape_manual(values=c(1,16,0)) +
+        theme_nomask()
+show(base4)
+ggsave('plot4.png')
+```
+
